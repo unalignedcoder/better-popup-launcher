@@ -14,45 +14,94 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http: //www.gnu.org/licenses/>.
  */
-import QtQuick 2.2
-import org.kde.plasma.plasmoid 2.0
-import org.kde.plasma.core 2.0 as PlasmaCore
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Dialogs
+import QtQuick.Controls.Fusion
+import org.kde.plasma.core as PlasmaCore
+import org.kde.plasma.plasmoid
+import org.kde.plasma.components as PlasmaComponents
+import org.kde.kirigami as Kirigami
+import org.kde.plasma.plasma5support as Plasma5Support
 
-Item {
-    property var title: plasmoid.configuration.title
-    property var subtitle: plasmoid.configuration.subtitle
-    property var icon: plasmoid.configuration.icon
-    property var apps: plasmoid.configuration.apps
-    property bool separatorStyle: plasmoid.configuration.separatorStyle
-    property int widgetWidth: plasmoid.configuration.widgetWidth
+PlasmoidItem {
+    id: popupLauncher
 
-    Plasmoid.compactRepresentation: PlasmaCore.IconItem {
-        source: icon
-        width: units.iconSizes.medium
-        height: units.iconSizes.medium
-        active: mouseArea.containsMouse
+    property var title: Plasmoid.configuration.title
+    property var subtitle: Plasmoid.configuration.subtitle
+    property var icon: Plasmoid.configuration.icon
+    property var apps: Plasmoid.configuration.apps
+    property bool separatorStyle: Plasmoid.configuration.separatorStyle
+    property int widgetWidth: Plasmoid.configuration.widgetWidth
 
-        //this doesn't work
-        PlasmaCore.ToolTipArea {
-            anchors.fill: parent
-            icon: parent.source
-            mainText: title
+    switchWidth: fullRepresentationItem ? fullRepresentationItem.Layout.minimumWidth : Kirigami.Units.iconSizes.huge * 10
+    switchHeight: fullRepresentationItem ? fullRepresentationItem.Layout.minimumHeight : Kirigami.Units.iconSizes.huge * 10
+
+    toolTipTextFormat: Text.StyledText
+    toolTipMainText: title ? title : (subtitle ? "" : Plasmoid.name)
+    toolTipSubText: subtitle ? subtitle : (title ? "" : Plasmoid.name)
+
+    preferredRepresentation: compactRepresentation
+
+    Component.onCompleted: {
+        // trigger adding all sources already available
+        for (var i in appsSource.sources) {
+            appsSource.sourceAdded(appsSource.sources[i]);
+        }
+        //console.log("separatorHeight " + separatorHeight);
+        //console.log("visibleItemCount " + visibleItemCount);
+        //console.log("emptyItemCount " + emptyItemCount);
+    }
+
+   /* Was needed in Plasma 5 to execute commands with kRun.openUrl
+    Logic {
+        id: kRun
+    }*/
+
+    Plasma5Support.DataSource {
+        id: appsSource
+        engine: 'apps'
+
+        onSourceAdded: (source) => {
+            connectSource(source)
         }
 
-        Plasmoid.toolTipTextFormat: Text.StyledText
-Plasmoid.toolTipMainText: title ? title : (subtitle ? "" : plasmoid.name)
-Plasmoid.toolTipSubText: subtitle ? subtitle : (title ? "" : plasmoid.name)
+        onSourceRemoved: (source) => {
+            disconnectSource(source);
+        }
+    }
+
+    Plasma5Support.DataSource {
+        id: executable
+        engine: "executable"
+        connectedSources: []
+        onNewData: function (source, data) {
+            disconnectSource(source)
+        }
+
+        function exec(cmd) {
+            executable.connectSource(cmd)
+        }
+    }
+
+
+    compactRepresentation: Kirigami.Icon
+    {
+        source: icon
+        width: Kirigami.Units.iconSizes.medium
+        height: Kirigami.Units.iconSizes.medium
+        active: mouseArea.containsMouse
 
         MouseArea {
             id: mouseArea
             anchors.fill: parent
 
             onClicked: {
-                plasmoid.expanded = !plasmoid.expanded;
-                // if (plasmoid.expanded) {
-                //     // Adjust the x position of the FullRepresentation using its Layout
-                //     Plasmoid.fullRepresentation.Layout.leftMargin = -Plasmoid.fullRepresentation.width; // Adjust this value
-                // }
+                popupLauncher.expanded = !popupLauncher.expanded;
+                /*if (Plasmoid.expanded) {
+                    // Adjust the x position of the FullRepresentation using its Layout
+                    //fullRepresentation.Layout.leftMargin = -fullRepresentation.width; // Adjust this value
+                }*/
             }
 
             hoverEnabled: true
@@ -60,8 +109,9 @@ Plasmoid.toolTipSubText: subtitle ? subtitle : (title ? "" : plasmoid.name)
 
     }
 
-    Plasmoid.fullRepresentation: FullRepresentation {}
+    fullRepresentation: FullRepresentation {}
 
-    Plasmoid.preferredRepresentation: Plasmoid.compactRepresentation
-//     Plasmoid.preferredRepresentation: Plasmoid.fullRepresentation
+
 }
+
+

@@ -14,33 +14,44 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http: //www.gnu.org/licenses/>.
  */
-import QtQuick 2.2
-import QtQuick.Controls 2.5
-import QtQuick.Layouts 1.1
-import QtQuick.Dialogs 1.0
-import org.kde.plasma.core 2.0 as PlasmaCore
-import org.kde.plasma.extras 2.0 as PlasmaExtras
-import org.kde.kquickcontrolsaddons 2.0 as KQuickAddons
-//import org.kde.kirigami 2.20 as Kirigami
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Dialogs
+import org.kde.plasma.plasmoid
+import org.kde.plasma.core as PlasmaCore
+import org.kde.plasma.extras as PlasmaExtras
+import org.kde.iconthemes as KIconThemes
+import org.kde.plasma.plasma5support as Plasma5Support
+import org.kde.kirigami as Kirigami
+import org.kde.ksvg as KSvg
 //import "code/tools.js" as Tools
 
 Item {
     id:root
 
     property alias cfg_title: title.text
+    property string cfg_titleDefault
     property alias cfg_subtitle: subtitle.text
+    property string cfg_subtitleDefault
+    property bool cfg_separatorStyle: Plasmoid.configuration.separatorStyle
+    property bool cfg_separatorStyleDefault
     property alias cfg_icon: icon.text
+    property string cfg_iconDefault
     property var cfg_apps: []
+    property var cfg_appsDefault: []
     property alias cfg_widgetWidth: widgetWidth.value
+    property int cfg_widgetWidthDefault
     property int scrollY: 0
     property int startY: 0
     property int lastMouseY: 0
+    property string title: 'Popup Launcher'
     property ListModel appsModel: ListModel {}
 
     property int listViewHeight: 0
     property ListView listViewReference: apps // Store a reference to the ListView here
 
-    PlasmaCore.DataSource {
+    Plasma5Support.DataSource {
         id: appsSource
         engine: 'apps'
         connectedSources: sources
@@ -76,8 +87,8 @@ Item {
         Button {
             id: iconButton
 
-            implicitWidth: previewFrame.width + PlasmaCore.Units.smallSpacing * 2
-            implicitHeight: previewFrame.height + PlasmaCore.Units.smallSpacing * 2
+            implicitWidth: previewFrame.width + Kirigami.Units.smallSpacing * 2
+            implicitHeight: previewFrame.height + Kirigami.Units.smallSpacing * 2
             hoverEnabled: true
 
             Accessible.name: i18nc("@action:button", "Change Application Launcher's icon")
@@ -91,32 +102,32 @@ Item {
             Component.onCompleted: {
                 if (cfg_icon === "") {
                     // Initialize with a default icon for the first time use
-                    cfg_icon = plasmoid.configuration.icon;
+                    cfg_icon = Plasmoid.configuration.icon;
                 }
-                previewFrame.source = cfg_icon;
+                previewFrame.imagePath = cfg_icon;
             }
 
-            KQuickAddons.IconDialog {
+            KIconThemes.IconDialog {
                 id: iconDialog2
-                onIconNameChanged: {
+                onIconNameChanged: (iconName) => {
                     cfg_icon = iconName || "start-here-kde" // Update the cfg_icon property
-                    previewFrame.source = cfg_icon; // Update the icon displayed in previewFrame
+                    previewFrame.imagePath = cfg_icon; // Update the icon displayed in previewFrame
                 }
             }
 
             onPressed: iconMenu.opened ? iconMenu.close() : iconMenu.open()
 
-            PlasmaCore.FrameSvgItem {
+            KSvg.FrameSvgItem {
                 id: previewFrame
                 anchors.centerIn: parent
                 imagePath: plasmoid.formFactor === PlasmaCore.Types.Vertical || plasmoid.formFactor === PlasmaCore.Types.Horizontal
                         ? "widgets/panel-background" : "widgets/background"
-                width: PlasmaCore.Units.iconSizes.medium + fixedMargins.left + fixedMargins.right
-                height: PlasmaCore.Units.iconSizes.medium + fixedMargins.top + fixedMargins.bottom
+                width: Kirigami.Units.iconSizes.medium + fixedMargins.left + fixedMargins.right
+                height: Kirigami.Units.iconSizes.medium + fixedMargins.top + fixedMargins.bottom
 
-                PlasmaCore.IconItem {
+                Kirigami.Icon {
                     anchors.centerIn: parent
-                    width: PlasmaCore.Units.iconSizes.medium
+                    width: Kirigami.Units.iconSizes.medium
                     height: width
                     source: cfg_icon
                 }
@@ -183,7 +194,7 @@ Item {
                         delegate: Item {
                             id: appItem
                             width: apps.width
-                            height: units.iconSizes.smallMedium + 2*units.smallSpacing
+                            height: Kirigami.Units.iconSizes.smallMedium + 2* Kirigami.Units.smallSpacing
 
                             property bool isHovered: false
                             property bool isUpHovered: false
@@ -258,15 +269,15 @@ Item {
                                 }
 
                                 RowLayout {
-                                    x: units.smallSpacing
-                                    y: units.smallSpacing
+                                    x: Kirigami.Units.smallSpacing
+                                    y: Kirigami.Units.smallSpacing
 
                                     //1) Icon
                                     Item { // Hack - since setting the dimensions of PlasmaCore.IconItem won't work
-                                        height: units.iconSizes.smallMedium
+                                        height: Kirigami.Units.iconSizes.smallMedium
                                         width: height
 
-                                        PlasmaCore.IconItem {
+                                        Kirigami.Icon {
                                             anchors.fill: parent
                                             source: modelData !== "" ? appsSource.data[modelData].iconName : ""
                                             active: isHovered
@@ -282,16 +293,16 @@ Item {
 
                                     //3) Remove
                                     Rectangle {
-                                        height: units.iconSizes.smallMedium
-                                        width: units.iconSizes.small
+                                        height: Kirigami.Units.iconSizes.smallMedium
+                                        width: Kirigami.Units.iconSizes.small
                                         Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
                                         visible: isHovered
                                         z: 1
-                                        radius: units.iconSizes.smallMedium / 4
+                                        radius: Kirigami.Units.iconSizes.smallMedium / 4
                                         color: 'white'
                                         opacity: 1
 
-                                        Behavior on color { NumberAnimation { duration: units.shortDuration * 3 } }
+                                        Behavior on color { NumberAnimation { duration: Kirigami.Units.shortDuration * 3 } }
 
                                         Label {
                                             id: labelRemove
@@ -330,7 +341,7 @@ Item {
                                                 id: labelColorAnimation
                                                 target: labelRemove
                                                 property: "color"
-                                                duration: units.shortDuration * 3
+                                                duration: Kirigami.Units.shortDuration * 3
                                                 from: labelRemove.color
                                                 to: isRemoveHovered ? 'red' : 'gray'
                                             }
@@ -344,7 +355,7 @@ Item {
                         } //delegate: Item
 
                         Component.onCompleted: {
-                            model = plasmoid.configuration.apps
+                            model = Plasmoid.configuration.apps
                             listViewHeight = height; // Set listViewHeight to the height of the ListView
                             //updateScrollPosition(newItemPosition);
                         }
@@ -375,14 +386,14 @@ Item {
 
             CheckBox {
                 text: i18n('Use thin lines as separators')
-                checked: plasmoid.configuration.separatorStyle
+                checked: Plasmoid.configuration.separatorStyle
                 onCheckedChanged: {
                     var m = apps.model
-                    m.push(plasmoid.configuration.separatorStyle = checked) //applied immediately
+                    m.push(Plasmoid.configuration.separatorStyle = checked) //applied immediately
                     cfg_apps = m
                     apps.model = m
-                    //plasmoid.configuration.separatorStyle = checked;
-                    //plasmoid.configuration.save();
+                    //Plasmoid.configuration.separatorStyle = checked;
+                    //Plasmoid.configuration.save();
                 }
             }
 
@@ -394,7 +405,7 @@ Item {
 
         SpinBox {
             id: widgetWidth
-            from: units.iconSizes.medium + 2*units.smallSpacing
+            from: Kirigami.Units.iconSizes.medium + 2* Kirigami.Units.smallSpacing
             to: 1000
             stepSize: 10
             value: Math.max(from, Math.min(value, to))
@@ -408,7 +419,7 @@ Item {
     FileDialog {
         id: iconDialog
         title: 'Please choose an image file'
-        folder: '/usr/share/icons/breeze/'
+        currentFolder: '/usr/share/icons/breeze/'
         nameFilters: ['Image files (*.png *.jpg *.xpm *.svg *.svgz)', 'All files (*)']
         onAccepted: {
             icon.text = iconDialog.fileUrl

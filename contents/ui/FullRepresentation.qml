@@ -14,18 +14,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http: //www.gnu.org/licenses/>.
  */
-import QtQuick 2.5
-import QtQuick.Layouts 1.1
-import org.kde.plasma.core 2.0 as PlasmaCore
-import org.kde.plasma.components 2.0 as PlasmaComponents
-import org.kde.plasma.extras 2.0 as PlasmaExtras
-import org.kde.plasma.private.quicklaunch 1.0
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Dialogs
+import QtQuick.Controls.Fusion
+import org.kde.plasma.core as PlasmaCore
+import org.kde.plasma.plasmoid
+import org.kde.plasma.components as PlasmaComponents
+import org.kde.kirigami as Kirigami
+import org.kde.plasma.plasma5support as Plasma5Support
+import QtQuick.Templates as T
+import org.kde.plasma.extras as PlasmaExtras
 
-
-Item {
-    property real mediumSpacing: 1.5*units.smallSpacing
-    property real itemHeight: Math.max(units.iconSizes.smallMedium, theme.defaultFont.pixelSize)
-    property bool showSeparators: plasmoid.configuration.separatorStyle
+T.Page {
+    property real mediumSpacing: 1.5*Kirigami.Units.smallSpacing
+    property real itemHeight: Math.max(Kirigami.Units.iconSizes.smallMedium, Kirigami.Theme.defaultFont.pixelSize)
+    property bool showSeparators: Plasmoid.configuration.separatorStyle
     property int separatorHeight: showSeparators ? 6 : 10
     property int visibleItemCount: calculateVisibleItemCount()
     property int emptyItemCount: calculateEmptyItemCount()
@@ -67,34 +71,7 @@ Item {
     Layout.preferredWidth: Layout.minimumWidth
     Layout.preferredHeight: Layout.minimumHeight
 
-    Component.onCompleted: {
-        // trigger adding all sources already available
-        for (var i in appsSource.sources) {
-            appsSource.sourceAdded(appsSource.sources[i]);
-        }
-        //console.log("separatorHeight " + separatorHeight);
-        //console.log("visibleItemCount " + visibleItemCount);
-        //console.log("emptyItemCount " + emptyItemCount);
-    }
-
-    PlasmaCore.DataSource {
-        id: appsSource
-        engine: 'apps'
-
-        onSourceAdded: {
-            connectSource(source)
-        }
-
-        onSourceRemoved: {
-            disconnectSource(source);
-        }
-    }
-
-    Logic {
-        id: kRun
-    }
-
-    PlasmaExtras.ScrollArea {
+    contentItem: ScrollView {
         anchors.fill: parent
 
         ListView {
@@ -102,7 +79,7 @@ Item {
             anchors.fill: parent
             model: apps
             //clip:true
-            highlight: PlasmaComponents.Highlight {}
+            highlight: PlasmaExtras.Highlight {}
             highlightMoveDuration: 0
             highlightResizeDuration: 0
 
@@ -127,8 +104,9 @@ Item {
                         isHovered = false
                     }
                     onClicked: {
-                        plasmoid.expanded = false
-                        kRun.openUrl("file:" + appsSource.data[modelData].entryPath)
+                        popupLauncher.expanded = false
+                        //TODO is there any analog in plasma6? kRun.openUrl("file:" + appsSource.data[modelData].entryPath)
+                        executable.exec('kfmclient exec "' + appsSource.data[modelData].entryPath+'"')
                     }
 
                     Row {
@@ -143,13 +121,13 @@ Item {
 
                         Item { // Hack - since setting the dimensions of PlasmaCore.IconItem won't work
 
-                            height: !appName.trim() ? 1 : units.iconSizes.smallMedium
+                            height: !appName.trim() ? 1 : Kirigami.Units.iconSizes.smallMedium
                             width: height
                             anchors.verticalCenter: parent.verticalCenter
                             Layout.fillHeight: true
                             Layout.margins: 0
 
-                            PlasmaCore.IconItem {
+                            Kirigami.Icon {
                                 anchors.fill: parent
                                 source: appIconName
                                 active: isHovered
@@ -157,13 +135,14 @@ Item {
                             }
                         }
 
-                        PlasmaComponents.Label {
+                        Label {
                             text: appName
-                            width: parent.width - units.iconSizes.smallMedium - mediumSpacing
+                            width: parent.width - Kirigami.Units.iconSizes.smallMedium - mediumSpacing
                             height: parent.height
                             elide: Text.ElideRight
                             verticalAlignment: Text.AlignVCenter
                             visible: appName.trim()
+                            color: Kirigami.Theme.textColor
 
                             // Component.onCompleted: {
                             //     console.log("Label padding:", padding);
@@ -180,10 +159,10 @@ Item {
                     height: 1 // You can adjust the separator height as needed
                     width: parent.width
                     Layout.fillHeight: true
-                    color: "gray" // You can change the color of the separator
+                    color: "gray"// You can change the color of the separator
                     border.color: "transparent"
                     z:1
-                    visible: !appName.trim() && separatorStyle
+                    visible: !appName.trim() && showSeparators
                     anchors.verticalCenter: parent.verticalCenter
 
 

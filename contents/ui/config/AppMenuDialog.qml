@@ -14,24 +14,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http: //www.gnu.org/licenses/>.
  */
-import QtQuick 2.2
-import QtQuick.Controls 1.3
-import QtQuick.Layouts 1.1
-import QtQuick.Dialogs 1.2
-import org.kde.plasma.core 2.0 as PlasmaCore
-import org.kde.plasma.components 2.0 as PlasmaComponents
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Dialogs
+import org.kde.plasma.core as PlasmaCore
+import org.kde.plasma.components as PlasmaComponents
+import org.kde.plasma.plasma5support as Plasma5Support
+import org.kde.kirigami as Kirigami
+import org.kde.plasma.plasmoid
 
 Dialog {
     id: appMenuDialog
     title: i18n('Choose an application')
-    standardButtons: StandardButton.Cancel
+    standardButtons: Dialog.Cancel
 
     width: 300
     height: 400
 
     property string selectedMenuId: ''
 
-    PlasmaCore.DataSource {
+    Plasma5Support.DataSource {
         id: appsSource
         engine: 'apps'
         connectedSources: sources
@@ -52,13 +55,13 @@ Dialog {
 
             model: appsModel
 
-            highlight: PlasmaComponents.Highlight {}
+            //TODO Plasma 6 highlight: PlasmaComponents.Highlight {}
             highlightMoveDuration: 0
             highlightResizeDuration: 0
 
             delegate: Item {
                 width: parent.width
-                height: units.iconSizes.small + 2*units.smallSpacing
+                height: Kirigami.Units.iconSizes.small + 2* Kirigami.Units.smallSpacing
 
                 property bool isHovered: false
 
@@ -80,14 +83,14 @@ Dialog {
                     }
 
                     RowLayout {
-                        x: units.smallSpacing
-                        y: units.smallSpacing
+                        x: Kirigami.Units.smallSpacing
+                        y: Kirigami.Units.smallSpacing
 
                         Item { // Hack - since setting the dimensions of PlasmaCore.IconItem won't work
-                            height: units.iconSizes.small
+                            height: Kirigami.Units.iconSizes.small
                             width: height
 
-                            PlasmaCore.IconItem {
+                            Kirigami.Icon {
                                 anchors.fill: parent
                                 source: appsSource.data[desktop].iconName
                                 active: isHovered
@@ -106,21 +109,21 @@ Dialog {
             section.property: 'category'
             section.delegate: Item {
                 width: parent.width
-                height: units.iconSizes.small + 2*units.smallSpacing
+                height: Kirigami.Units.iconSizes.small + 2* Kirigami.Units.smallSpacing
 
                 Rectangle {
                     anchors.fill: parent
-                    color: theme.complementaryBackgroundColor
+                    color: Kirigami.Theme.positiveBackgroundColor
 
                     Label {
-                        x: units.smallSpacing
+                        x: Kirigami.Units.smallSpacing
                         y: 0
-                        width: parent.width - 2*units.smallSpacing
+                        width: parent.width - 2* Kirigami.Units.smallSpacing
                         height: parent.height
                         verticalAlignment: Text.AlignVCenter
                         text: section
                         font.bold: true
-                        color: theme.complementaryTextColor
+                        color: Kirigami.Theme.textColor
                     }
                 }
             }

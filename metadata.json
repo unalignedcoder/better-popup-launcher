@@ -1,0 +1,24 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "KPlugin": {
+    "Authors": [
+      {
+        "Email": "unalignedcoder@tuscoss.com",
+        "Name": "unalignedcoder"
+      }
+    ],
+    "Category": "Windows and Tasks",
+    "Dependencies": [
+    ],
+    "Description": "Allows to create timers to track work",
+    "Description[en_GB]": "Allows to create timers to track work",
+    "EnabledByDefault": true,
+    "Icon": "application-menu",
+    "Id": "tuscoss.betterPopupLauncher",
+    "License": "MIT",
+    "Name": "Better Popup Launcher",
+    "Version": "1.0",
+    "Website": "https://github.com/dfaust/plasma-applet-popup-launcher"
+  },
+  "X-Plasma-API-Minimum-Version": "6.0"
+}

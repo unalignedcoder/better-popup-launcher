@@ -22,7 +22,7 @@
             <default>250</default>
         </entry>
         <entry name="separatorStyle" type="bool">
-            <default>false</default>
+            <default>true</default>
         </entry>
     </group>
     
